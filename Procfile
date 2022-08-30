@@ -1,0 +1,1 @@
+worker: python BNB_bot.py
