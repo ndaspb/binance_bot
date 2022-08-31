@@ -20,7 +20,7 @@ client = Client(KEY, SECRET)#, testnet=True)
 
 maxposition = 0.5
 stop_percent = 0.007  # 0.01=1%
-eth_proffit_array = [[0.5, 2], [0.7, 2], [1.0, 3], [1.2, 2], [1.5, 2]]# [[0.2, 2], [0.3, 2], [0.4, 2], [0.5, 2], [0.6, 2]] #, [17, 0], [20, 0]]#, [200, 1], [200, 0]]
+eth_proffit_array = [[0.5, 2], [0.7, 2], [1.0, 2], [1.2, 2], [1.5, 2]]# [[0.2, 2], [0.3, 2], [0.4, 2], [0.5, 2], [0.6, 2]] #, [17, 0], [20, 0]]#, [200, 1], [200, 0]]
 proffit_array = copy.copy(eth_proffit_array)
 
 pointer = str(random.randint(1000, 9999))
@@ -317,7 +317,7 @@ def telegram_bot_sendtext(bot_message):
 def prt(message):
     # telegram message
     telegram_bot_sendtext(pointer + ': ' + message)
-    # print(pointer + ': ' + message)
+    print(pointer + ': ' + message)
 
 sum_profit = [0]
 
@@ -371,7 +371,7 @@ def main():
                         + ' профит2 ' + str(pr_binance) + ' balance ' + str(balance))
                     proffit_array = copy.copy(eth_proffit_array)
                     line_stop = 0
-                    time.sleep(60)
+                    # time.sleep(60)
                 else:
                     temp_arr = copy.copy(proffit_array)
                     for j in range(0, len(temp_arr) - 1):
@@ -402,7 +402,7 @@ def main():
                         + ' профит2 ' + str(pr_binance)  + ' balance '+ str(balance))
                     proffit_array = copy.copy(eth_proffit_array)
                     line_stop = 0
-                    time.sleep(60)
+                    # time.sleep(60)
                 else:
                     temp_arr = copy.copy(proffit_array)
                     for j in range(0, len(temp_arr) - 1):
