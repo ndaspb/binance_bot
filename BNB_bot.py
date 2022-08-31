@@ -19,8 +19,8 @@ client = Client(KEY, SECRET)#, testnet=True)
 # client = Client(TEST_KEY, TEST_SECRET)
 
 maxposition = 0.5
-stop_percent = 0.01  # 0.01=1%
-eth_proffit_array = [[0.5, 2], [1, 2], [1.5, 2], [2, 2], [2.5, 2]]# [[0.2, 2], [0.3, 2], [0.4, 2], [0.5, 2], [0.6, 2]] #, [17, 0], [20, 0]]#, [200, 1], [200, 0]]
+stop_percent = 0.007  # 0.01=1%
+eth_proffit_array = [[0.5, 2], [0.7, 2], [1.0, 3], [1.2, 2], [1.5, 2]]# [[0.2, 2], [0.3, 2], [0.4, 2], [0.5, 2], [0.6, 2]] #, [17, 0], [20, 0]]#, [200, 1], [200, 0]]
 proffit_array = copy.copy(eth_proffit_array)
 
 pointer = str(random.randint(1000, 9999))
@@ -42,7 +42,6 @@ def get_futures_klines(symbol, limit=500):
 
 
 # Open position for Sybol with
-
 def open_position(symbol, s_l, quantity_l):
     # prt('open: ' + symbol + ' quantity: ' + str(quantity_l))
     sprice = get_symbol_price(symbol)
@@ -323,15 +322,18 @@ def prt(message):
 sum_profit = [0]
 
 pr_binance = 0
+line_stop = 0
+
 def main():
-    global proffit_array, pr_binance
+
+    global proffit_array, pr_binance, line_stop
 
     try:
         # getTPSLfrom_telegram()
         signal = check_if_signal(symbol)
         position = get_opened_positions(symbol)
         profit = position[2]
-        balance = position[3]
+        balance = position[4]
         open_sl = position[0]
         if open_sl == "":  # no position
             # close all stop loss orders
@@ -356,22 +358,25 @@ def main():
             quantity = position[1]
 
             if open_sl == 'long':
-                stop_price = entry_price * (1 - stop_percent)
-                if (current_price < stop_price): # or signal == 'short1':
+
+                stop_price = entry_price * (1 - stop_percent) + line_stop
+                if (current_price < stop_price) or (signal == 'short' and current_price > entry_price): # or signal == 'short1':
                     # stop loss
                     close_position(symbol, 'long', abs(quantity))
                     sumlong = (1.00036*current_price - 0.99982 * entry_price) * abs(quantity)
                     sum_profit.append(sumlong)
                     pr_binance += profit
                     prt('закрыта позиция по СТОПУ ' + symbol + ' long ' + str(quantity) + ' ' +
-                        str(round(sumlong, 3))+ ' profit ' + str(round(sum(sum_profit),3))
-                        + ' профит2 ' + str(pr_binance)  + ' balance '+ str(balance))
+                        str(round(sumlong, 3)) + ' profit ' + str(round(sum(sum_profit), 3))
+                        + ' профит2 ' + str(pr_binance) + ' balance ' + str(balance))
                     proffit_array = copy.copy(eth_proffit_array)
+                    line_stop = 0
                     time.sleep(60)
                 else:
                     temp_arr = copy.copy(proffit_array)
                     for j in range(0, len(temp_arr) - 1):
                         delta = temp_arr[j][0]
+                        line_stop = delta
                         contracts = temp_arr[j][1]
                         if (current_price > (entry_price + delta)):
                             # take profit
@@ -381,12 +386,12 @@ def main():
                             pr_binance += profit
                             prt('закрыта позиция ' + symbol + ' long количество: ' +
                                 str(round(maxposition * (contracts / 10), 3)) + ' сумма ' +
-                                str(round(sumlong,3))+ ' profit ' + str(round(sum(sum_profit),3)) + ' профит2 ' + str(pr_binance)  + ' balance '+ str(balance))
+                                str(round(sumlong, 3)) + ' profit ' + str(round(sum(sum_profit), 3)) + ' профит2 ' + str(pr_binance)  + ' balance '+ str(balance))
                             del proffit_array[0]
 
             if open_sl == 'short':
-                stop_price = entry_price * (1 + stop_percent)
-                if (current_price > stop_price):# or signal == 'long1':
+                stop_price = entry_price * (1 + stop_percent) - line_stop
+                if (current_price > stop_price) or (signal == 'long' and current_price < entry_price):# or signal == 'long1':
                     # stop loss
                     close_position(symbol, 'short', abs(quantity))
                     sumlong = (0.99982 * entry_price - 1.00036*current_price) * abs(quantity)
@@ -396,11 +401,13 @@ def main():
                         str(round(sumlong,3))+ ' profit ' + str(round(sum(sum_profit),3))
                         + ' профит2 ' + str(pr_binance)  + ' balance '+ str(balance))
                     proffit_array = copy.copy(eth_proffit_array)
+                    line_stop = 0
                     time.sleep(60)
                 else:
                     temp_arr = copy.copy(proffit_array)
                     for j in range(0, len(temp_arr) - 1):
                         delta = temp_arr[j][0]
+                        line_stop = delta
                         contracts = temp_arr[j][1]
                         if (current_price < (entry_price - delta)):
                             # take profit
