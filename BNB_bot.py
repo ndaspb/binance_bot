@@ -275,8 +275,8 @@ def check_if_signal(symbol):
 
 
 telegram_delay = 12
-bot_token = '5288309914:AAFFKCA4xw8FBPJ25DKr2AzpaAl2Q7MP9Cc'
-chat_id = '1314261764'
+bot_token = ':'
+chat_id = ''
 
 
 def getTPSLfrom_telegram():
